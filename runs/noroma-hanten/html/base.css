@@ -1,0 +1,87 @@
+@charset "UTF-8";
+:root {
+  --safe-x: 135px;
+  --safe-y: 76px;
+  --bg-color: #F5F5F5;
+  --text-color: #212121;
+  --accent-color: #212121;
+  --item-bg: #E0E0E0;
+}
+body {
+  margin: 0;
+  padding: 0;
+  width: 1920px;
+  height: 1080px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: "Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+.safe-area {
+  position: absolute;
+  top: var(--safe-y);
+  bottom: var(--safe-y);
+  left: var(--safe-x);
+  right: var(--safe-x);
+  display: flex;
+  flex-direction: column;
+}
+.header {
+  height: 120px;
+  border-bottom: 12px solid var(--accent-color);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+}
+.header h1 {
+  font-size: 64px;
+  font-weight: bold;
+  margin: 0;
+  color: var(--text-color);
+}
+/* 店舗情報レイアウト */
+.shop-info {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  justify-content: center;
+  flex: 1;
+}
+.shop-info-line {
+  font-size: 42px;
+  font-weight: bold;
+  background-color: var(--item-bg);
+  padding: 24px 32px;
+  border-left: 24px solid var(--accent-color);
+}
+/* メニューレイアウト */
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(6, 1fr);
+  grid-auto-flow: column;
+  gap: 16px 48px;
+  flex: 1;
+}
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 36px;
+  font-weight: bold;
+  background-color: var(--item-bg);
+  padding: 12px 24px;
+  border-left: 16px solid var(--accent-color);
+  box-sizing: border-box;
+}
+.item-name {
+  flex: 1;
+  word-break: break-all;
+  line-height: 1.3;
+  margin-right: 24px;
+}
+.item-price {
+  white-space: nowrap;
+}

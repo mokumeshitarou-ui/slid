@@ -3,7 +3,8 @@ dist/
 .env
 output/*.png
 output/*.zip
-runs/*/
+runs/*/png/
+runs/*/slides.zip
 test-run/slides/*.png
 test-run/slides/*.html
 *.log

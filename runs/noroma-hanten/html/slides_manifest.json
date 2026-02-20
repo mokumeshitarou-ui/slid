@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "shop_name": "野呂松飯店",
+  "generated_at": "2026-02-20T00:00:00Z",
+  "css": "base.css",
+  "slides": [
+    { "file": "slide_001.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_002.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_003.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_004.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_005.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_006.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_007.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_008.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_009.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_010.html", "type": "shop-info", "title": "店舗情報" },
+    { "file": "slide_011.html", "type": "shop-info", "title": "店舗情報" }
+  ]
+}
