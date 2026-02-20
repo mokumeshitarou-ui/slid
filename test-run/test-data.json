@@ -1,0 +1,142 @@
+{
+  "shop": {
+    "name": "野呂松飯店",
+    "name_en": "NOROMA HANTEN",
+    "genre": "令和の町中華 / ラーメン・焼きめし",
+    "area": "大阪府豊中市 岡町",
+    "address": "大阪府豊中市岡町桜塚商店街エリア",
+    "access": "阪急宝塚線「岡町」駅から徒歩約2分（約61m）",
+    "hours_blocks": [
+      { "label": "通し営業", "time": "11:00 〜 23:00", "note": null }
+    ],
+    "closed_days": "なし（定休日なし）",
+    "closed_note": "※臨時休業・時間変更はSNSで告知",
+    "seats": "カウンター8席",
+    "parking": "専用駐車場なし（近隣コインパーキング利用）",
+    "payment": "クレジットカード不可 / 電子マネー・QR対応",
+    "smoking": "全席禁煙"
+  },
+  "tax": "unknown",
+  "categories": [
+    {
+      "name": "麺類",
+      "name_en": "NOODLES",
+      "note": null,
+      "items": [
+        { "name": "豚骨ラーメン", "price": "800円", "note": null },
+        { "name": "味噌ラーメン", "price": "950円", "note": null },
+        { "name": "超にんにくラーメン", "price": "950円", "note": null },
+        { "name": "チャンポン", "price": "950円", "note": null },
+        { "name": "中華そば", "price": "750円", "note": null },
+        { "name": "麺屋ノロマ特製！スタミナラーメン", "price": "950円", "note": null },
+        { "name": "焼きそば", "price": "800円", "note": null },
+        { "name": "スタミナ焼きそば", "price": "900円", "note": null }
+      ],
+      "category_note": "各種大盛 +200円"
+    },
+    {
+      "name": "ご飯物",
+      "name_en": "RICE DISHES",
+      "note": null,
+      "items": [
+        { "name": "焼きめし", "price": "700円", "note": null },
+        { "name": "にんにく焼きめし", "price": "800円", "note": null },
+        { "name": "五目焼きめし", "price": "800円", "note": null },
+        { "name": "チャーシュー焼きめし", "price": "900円", "note": null },
+        { "name": "天津焼きめし", "price": "800円", "note": null },
+        { "name": "白ごはん", "price": "200円", "note": null }
+      ],
+      "category_note": "各種大盛 +100円"
+    },
+    {
+      "name": "焼きめしセット",
+      "name_en": "FRIED RICE SET",
+      "note": null,
+      "layout": "set",
+      "items": [
+        { "name": "お好きな麺類＋焼きめし（普通）", "price": "+500円", "note": null },
+        { "name": "お好きな麺類＋焼きめし（大）", "price": "+700円", "note": null },
+        { "name": "お好きな麺類＋焼きめし（小）", "price": "+350円", "note": null },
+        { "name": "お好きな麺類＋焼きめし（茶碗）", "price": "+200円", "note": null },
+        { "name": "半々セット", "price": "900円", "note": "半ラーメン【ラーメンor中華そば】＋半焼きめし" }
+      ],
+      "category_note": null
+    },
+    {
+      "name": "トッピング",
+      "name_en": "TOPPINGS",
+      "note": null,
+      "layout": "grid",
+      "items": [
+        { "name": "煮卵", "price": "150円", "note": null },
+        { "name": "ネギ", "price": "100円", "note": null },
+        { "name": "もやし", "price": "100円", "note": null },
+        { "name": "チャーシュー", "price": "300円", "note": null },
+        { "name": "目玉焼き", "price": "150円", "note": null }
+      ],
+      "category_note": null
+    },
+    {
+      "name": "一品",
+      "name_en": "SIDE DISHES",
+      "note": null,
+      "items": [
+        { "name": "ニラ玉", "price": "600円", "note": null },
+        { "name": "手羽先", "price": "600円", "note": null },
+        { "name": "餃子", "price": "300円", "note": null },
+        { "name": "ニラもやし炒め", "price": "700円", "note": null },
+        { "name": "野菜炒め", "price": "800円", "note": null },
+        { "name": "チャーシュー盛り", "price": "700円", "note": null },
+        { "name": "チャーシューエッグ", "price": "900円", "note": null }
+      ],
+      "category_note": null
+    },
+    {
+      "name": "飲み物",
+      "name_en": "DRINKS",
+      "note": null,
+      "items": [
+        { "name": "瓶ビール", "price": "600円", "note": null },
+        { "name": "角ハイボール", "price": "500円", "note": null },
+        { "name": "レモンサワー", "price": "400円", "note": null },
+        { "name": "オレンジ", "price": "250円", "note": null },
+        { "name": "コーラ", "price": "250円", "note": null },
+        { "name": "烏龍茶", "price": "250円", "note": null }
+      ],
+      "category_note": null
+    },
+    {
+      "name": "期間限定 台湾メニュー",
+      "name_en": "LIMITED: TAIWANESE MENU",
+      "note": null,
+      "limited": true,
+      "items": [
+        { "name": "台湾ラーメン", "price": "1000円", "note": null },
+        { "name": "台湾焼きめし", "price": "950円", "note": null },
+        { "name": "台湾焼きそば", "price": "1050円", "note": null },
+        { "name": "台湾風酢豚", "price": "900円", "note": null }
+      ],
+      "category_note": null
+    },
+    {
+      "name": "麺屋NOROMA 14周年スペシャル",
+      "name_en": "14TH ANNIVERSARY SPECIAL",
+      "note": null,
+      "limited": true,
+      "items": [
+        { "name": "スタミナらーめん", "price": "700円", "note": null }
+      ],
+      "category_note": null
+    },
+    {
+      "name": "お持ち帰りメニュー",
+      "name_en": "TAKEOUT",
+      "note": null,
+      "items": [
+        { "name": "お家で白ラーメン", "price": "600円", "note": null },
+        { "name": "チャーシューブロック", "price": "1300円", "note": null }
+      ],
+      "category_note": null
+    }
+  ]
+}
