@@ -1,0 +1,30 @@
+{
+  "name": "restaurant-slide-generator",
+  "version": "0.1.0",
+  "description": "飲食店スライド自動生成システム - Discord Bot経由でメニュー画像からPNGスライドを生成",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "bot": "tsx src/discord/bot.ts",
+    "render": "tsx src/agents/renderer/render.ts",
+    "qa": "tsx src/agents/qa-validator/validate.ts"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.0",
+    "playwright": "^1.48.0",
+    "zod": "^3.23.0",
+    "archiver": "^7.0.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^22.0.0",
+    "@types/archiver": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

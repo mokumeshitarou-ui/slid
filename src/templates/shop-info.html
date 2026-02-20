@@ -1,0 +1,47 @@
+<!-- 店情報スライド -->
+<style>
+  .info-header {
+    font-size: 44px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    padding-bottom: 16px;
+    border-bottom: 4px solid #1a1a1a;
+  }
+
+  .info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .info-row {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    font-size: 36px;
+    padding: 12px 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .info-label {
+    min-width: 240px;
+    font-weight: 700;
+    background: #f0f0f0;
+    padding: 8px 20px;
+    text-align: center;
+    font-size: 34px;
+  }
+
+  .info-value {
+    flex: 1;
+    font-size: 36px;
+  }
+</style>
+
+<div class="info-header">{{SHOP_NAME}} - 店舗情報</div>
+
+<div class="info-grid">
+  {{INFO_ROWS}}
+</div>
+
+{{CONFLICTS_HTML}}

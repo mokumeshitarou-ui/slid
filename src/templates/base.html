@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<style>
+  /* ========== リセット・基本設定 ========== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: "Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif;
+    font-size: 36px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #ffffff;
+  }
+
+  /* ========== 安全領域（上下左右 7%） ========== */
+  .safe-area {
+    position: absolute;
+    top: 76px;    /* 1080 * 0.07 = 75.6 → 76 */
+    left: 134px;  /* 1920 * 0.07 = 134.4 → 134 */
+    right: 134px;
+    bottom: 76px;
+    overflow: hidden;
+  }
+
+  /* ========== 共通ユーティリティ ========== */
+
+  /* 太線ボーダー（細線禁止のため最低3px） */
+  .border-thick {
+    border: 3px solid #1a1a1a;
+  }
+
+  /* セクション背景（矩形背景でセクション分け） */
+  .section-bg {
+    background: #f5f5f5;
+    padding: 20px 30px;
+    margin-bottom: 20px;
+  }
+
+  .section-bg-accent {
+    background: #2c2c2c;
+    color: #ffffff;
+    padding: 20px 30px;
+    margin-bottom: 20px;
+  }
+
+  /* フォントサイズ（最小32px厳守） */
+  .text-xl  { font-size: 56px; font-weight: 700; }
+  .text-lg  { font-size: 44px; font-weight: 700; }
+  .text-md  { font-size: 36px; font-weight: 400; }
+  .text-sm  { font-size: 32px; font-weight: 400; }
+  /* 32px未満は存在しない */
+
+  .text-bold   { font-weight: 700; }
+  .text-center { text-align: center; }
+  .text-right  { text-align: right; }
+  .text-muted  { color: #666666; }
+
+  /* レイアウト */
+  .flex       { display: flex; }
+  .flex-col   { flex-direction: column; }
+  .flex-wrap  { flex-wrap: wrap; }
+  .gap-sm     { gap: 10px; }
+  .gap-md     { gap: 20px; }
+  .gap-lg     { gap: 30px; }
+  .justify-between { justify-content: space-between; }
+  .align-center    { align-items: center; }
+
+  .w-half { width: 48%; }
+  .w-full { width: 100%; }
+
+  /* ページ番号 */
+  .page-number {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    font-size: 32px;
+    color: #999999;
+  }
+
+  /* 注意枠（矛盾・要確認表示用） */
+  .notice-box {
+    border: 3px solid #cc6600;
+    background: #fff8f0;
+    padding: 16px 24px;
+    margin-top: 16px;
+    font-size: 32px;
+  }
+
+  .notice-box-title {
+    font-weight: 700;
+    color: #cc6600;
+    margin-bottom: 8px;
+  }
+</style>
+<!-- テンプレートごとの追加スタイルはここに挿入 -->
+{{EXTRA_STYLES}}
+</head>
+<body>
+  <div class="safe-area" id="content">
+    {{CONTENT}}
+  </div>
+  <div class="page-number">{{PAGE_NUMBER}}</div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+output/*.png
+output/*.zip
+runs/*/
+*.log
+.DS_Store

@@ -1,0 +1,99 @@
+<!-- メニュースライド（2カラム対応） -->
+<style>
+  .menu-header {
+    font-size: 44px;
+    font-weight: 700;
+    background: #2c2c2c;
+    color: #ffffff;
+    padding: 14px 30px;
+    margin-bottom: 24px;
+  }
+
+  .menu-page-info {
+    font-size: 34px;
+    font-weight: 400;
+    margin-left: 16px;
+    opacity: 0.8;
+  }
+
+  .menu-columns {
+    display: flex;
+    gap: 40px;
+  }
+
+  .menu-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 2px solid #e0e0e0;
+    font-size: 36px;
+  }
+
+  .menu-item-name {
+    flex: 1;
+    font-weight: 500;
+    padding-right: 20px;
+  }
+
+  .menu-item-price {
+    white-space: nowrap;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .menu-item-note {
+    font-size: 32px;
+    color: #666666;
+    padding: 4px 0 8px 0;
+  }
+
+  .menu-item-limited {
+    display: inline-block;
+    background: #cc6600;
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+    padding: 2px 12px;
+    margin-right: 8px;
+  }
+
+  .menu-item-unconfirmed {
+    color: #cc0000;
+    font-weight: 700;
+    font-size: 32px;
+  }
+
+  .category-note {
+    font-size: 32px;
+    color: #555555;
+    padding: 0 0 12px 0;
+    font-style: italic;
+  }
+
+  .menu-tax-note {
+    font-size: 32px;
+    color: #888888;
+    text-align: right;
+    margin-top: 16px;
+  }
+</style>
+
+<div class="menu-header">
+  {{CATEGORY_NAME}}<span class="menu-page-info">{{PAGE_INFO}}</span>
+</div>
+
+{{CATEGORY_NOTE_HTML}}
+
+<div class="menu-columns" id="menu-content">
+  {{COLUMNS_HTML}}
+</div>
+
+<div class="menu-tax-note">{{TAX_NOTE}}</div>
