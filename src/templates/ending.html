@@ -1,0 +1,86 @@
+<!-- エンディングスライド -->
+<!-- 参考: 中央揃え「ご来店お待ちしています」+ 下部に店名 -->
+<style>
+  .ending-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+
+  /* 上下の水平ルール */
+  .ending-rule-top {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .ending-rule-bottom {
+    position: absolute;
+    bottom: 100px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .ending-message {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+  }
+
+  .ending-divider {
+    width: 120px;
+    height: 3px;
+    background: var(--accent);
+    margin-bottom: 24px;
+  }
+
+  .ending-shop-info {
+    position: absolute;
+    bottom: 120px;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+
+  .ending-shop-name {
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .ending-thanks {
+    font-size: 32px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+
+<div class="ending-wrap">
+  <div class="ending-rule-top"></div>
+
+  <div class="ending-message">ご来店お待ちしています</div>
+  <div class="ending-divider"></div>
+
+  <div class="ending-shop-info">
+    <div class="ending-shop-name">{{SHOP_NAME_EN}}</div>
+    <div class="ending-thanks">THANK YOU FOR WATCHING</div>
+  </div>
+
+  <div class="ending-rule-bottom"></div>
+</div>

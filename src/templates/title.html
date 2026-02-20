@@ -1,36 +1,76 @@
 <!-- タイトルスライド -->
+<!-- 参考: ダーク背景、金枠L字、店名大きく中央、下にエリア -->
 <style>
-  .title-container {
+  .title-wrap {
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 40px;
+    position: relative;
   }
 
-  .shop-name {
-    font-size: 72px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+  /* L字フレーム（左上 + 右下） */
+  .title-frame-tl {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 120px;
+    border-top: 4px solid var(--accent);
+    border-left: 4px solid var(--accent);
   }
 
-  .shop-area {
-    font-size: 44px;
-    font-weight: 400;
-    color: #555555;
+  .title-frame-br {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    border-bottom: 4px solid var(--accent);
+    border-right: 4px solid var(--accent);
+  }
+
+  .title-shop-name {
+    font-size: 80px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: 0.08em;
+    margin-bottom: 28px;
   }
 
   .title-divider {
-    width: 200px;
+    width: 160px;
     height: 4px;
-    background: #1a1a1a;
+    background: var(--accent);
+    margin-bottom: 28px;
+  }
+
+  .title-area {
+    font-size: 40px;
+    font-weight: 400;
+    color: var(--text-sub);
+    letter-spacing: 0.05em;
+  }
+
+  .title-sub-label {
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 20px;
   }
 </style>
 
-<div class="title-container">
-  <div class="shop-name">{{SHOP_NAME}}</div>
+<div class="title-wrap">
+  <div class="title-frame-tl"></div>
+  <div class="title-frame-br"></div>
+
+  <div class="title-shop-name">{{SHOP_NAME}}</div>
   <div class="title-divider"></div>
-  <div class="shop-area">{{SHOP_AREA}}</div>
+  <div class="title-area">{{SHOP_AREA}}</div>
+  <div class="title-sub-label">{{SHOP_GENRE}}</div>
 </div>

@@ -1,99 +1,105 @@
-<!-- メニュースライド（2カラム対応） -->
+<!-- メニュースライド（リスト型・2カラム対応） -->
+<!-- 参考: 点線リーダーで価格接続、金縦棒カテゴリ見出し -->
 <style>
-  .menu-header {
-    font-size: 44px;
-    font-weight: 700;
-    background: #2c2c2c;
-    color: #ffffff;
-    padding: 14px 30px;
-    margin-bottom: 24px;
-  }
-
-  .menu-page-info {
-    font-size: 34px;
-    font-weight: 400;
-    margin-left: 16px;
-    opacity: 0.8;
+  .menu-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .menu-columns {
     display: flex;
     gap: 40px;
-  }
-
-  .menu-column {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
   }
 
-  .menu-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 8px 0;
-    border-bottom: 2px solid #e0e0e0;
-    font-size: 36px;
-  }
-
-  .menu-item-name {
+  .menu-col {
     flex: 1;
-    font-weight: 500;
-    padding-right: 20px;
+    min-width: 0;
   }
 
-  .menu-item-price {
-    white-space: nowrap;
+  /* カテゴリブロック（カード内） */
+  .menu-category-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+
+  .menu-category-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .menu-category-bar {
+    width: 4px;
+    height: 32px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .menu-category-name {
+    font-size: 40px;
     font-weight: 700;
-    text-align: right;
+    color: var(--text-primary);
   }
 
-  .menu-item-note {
+  .menu-category-page {
     font-size: 32px;
-    color: #666666;
-    padding: 4px 0 8px 0;
+    color: var(--text-muted);
+    margin-left: auto;
   }
 
-  .menu-item-limited {
-    display: inline-block;
-    background: #cc6600;
-    color: #ffffff;
+  .menu-category-note {
     font-size: 32px;
-    font-weight: 700;
-    padding: 2px 12px;
-    margin-right: 8px;
-  }
-
-  .menu-item-unconfirmed {
-    color: #cc0000;
-    font-weight: 700;
-    font-size: 32px;
-  }
-
-  .category-note {
-    font-size: 32px;
-    color: #555555;
+    color: var(--text-sub);
     padding: 0 0 12px 0;
     font-style: italic;
   }
 
+  /* メニュー項目（行ベース） */
+  .menu-items {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 2段組み（1カテゴリ内の左右分け） */
+  .menu-items-2col {
+    display: flex;
+    gap: 32px;
+  }
+
+  .menu-items-2col > .menu-items-col {
+    flex: 1;
+  }
+
+  /* 税表記 */
   .menu-tax-note {
     font-size: 32px;
-    color: #888888;
+    color: var(--text-muted);
     text-align: right;
-    margin-top: 16px;
+    margin-top: auto;
+    padding-top: 16px;
   }
 </style>
 
-<div class="menu-header">
-  {{CATEGORY_NAME}}<span class="menu-page-info">{{PAGE_INFO}}</span>
+<!-- ページヘッダー -->
+<div class="page-header">
+  <div class="page-header-sub">{{HEADER_SUB}}</div>
+  <div class="page-header-row">
+    <div class="page-header-title">{{HEADER_TITLE}}</div>
+    <div class="page-header-label">{{HEADER_LABEL}}</div>
+  </div>
+  <div class="page-header-rule"></div>
 </div>
 
-{{CATEGORY_NOTE_HTML}}
-
-<div class="menu-columns" id="menu-content">
-  {{COLUMNS_HTML}}
+<!-- メニュー本体 -->
+<div class="menu-body" id="menu-content">
+  {{MENU_CONTENT}}
 </div>
 
 <div class="menu-tax-note">{{TAX_NOTE}}</div>

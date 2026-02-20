@@ -93,10 +93,12 @@ slide/
 │   │   ├── shop-info-pack-v2.ts
 │   │   └── slide-data-pack-v2.ts
 │   ├── templates/                     # HTMLスライドテンプレート
-│   │   ├── base.html
-│   │   ├── title.html
-│   │   ├── shop-info.html
-│   │   └── menu.html
+│   │   ├── base.html                 # 共通（ダークテーマ・安全領域）
+│   │   ├── title.html                # タイトル（L字枠・店名中央）
+│   │   ├── shop-info.html            # 店情報（2カラム：営業時間|アクセス）
+│   │   ├── menu.html                 # メニューリスト型（点線リーダー）
+│   │   ├── menu-grid.html            # メニューグリッド型（カード/セット）
+│   │   └── ending.html               # エンディング（来店案内）
 │   └── discord/                       # Discord Bot設定
 │       └── README.md
 ├── docs/                              # 設計ドキュメント

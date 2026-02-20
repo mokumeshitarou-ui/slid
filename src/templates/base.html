@@ -14,91 +14,266 @@
     font-family: "Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif;
     font-size: 36px;
     line-height: 1.5;
-    color: #1a1a1a;
-    background: #ffffff;
+    color: #e0e4ec;
+    background: #1a2030;
   }
 
   /* ========== 安全領域（上下左右 7%） ========== */
   .safe-area {
     position: absolute;
-    top: 76px;    /* 1080 * 0.07 = 75.6 → 76 */
-    left: 134px;  /* 1920 * 0.07 = 134.4 → 134 */
+    top: 76px;    /* 1080 * 0.07 */
+    left: 134px;  /* 1920 * 0.07 */
     right: 134px;
     bottom: 76px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* ========== 共通ユーティリティ ========== */
-
-  /* 太線ボーダー（細線禁止のため最低3px） */
-  .border-thick {
-    border: 3px solid #1a1a1a;
+  /* ========== カラー変数 ========== */
+  :root {
+    --bg-primary:   #1a2030;
+    --bg-card:      #232b3a;
+    --bg-card-alt:  #2a3345;
+    --accent:       #c8a84e;
+    --accent-dim:   #a08838;
+    --text-primary: #ffffff;
+    --text-body:    #e0e4ec;
+    --text-sub:     #b0b8c8;
+    --text-muted:   #6b7588;
+    --border:       #2e3a4e;
+    --border-accent:#c8a84e;
+    --warning:      #cc6600;
+    --error:        #cc4444;
   }
 
-  /* セクション背景（矩形背景でセクション分け） */
-  .section-bg {
-    background: #f5f5f5;
-    padding: 20px 30px;
+  /* ========== ページヘッダー（全スライド共通） ========== */
+  .page-header {
+    margin-bottom: 36px;
+    flex-shrink: 0;
+  }
+
+  .page-header-sub {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .page-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .page-header-title {
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: 0.05em;
+  }
+
+  .page-header-label {
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .page-header-rule {
+    height: 3px;
+    background: var(--accent);
+    margin-top: 16px;
+  }
+
+  /* ========== セクション見出し（金縦棒 + テキスト） ========== */
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
     margin-bottom: 20px;
   }
 
-  .section-bg-accent {
-    background: #2c2c2c;
-    color: #ffffff;
-    padding: 20px 30px;
-    margin-bottom: 20px;
+  .section-heading-bar {
+    width: 5px;
+    height: 40px;
+    background: var(--accent);
+    flex-shrink: 0;
   }
 
-  /* フォントサイズ（最小32px厳守） */
-  .text-xl  { font-size: 56px; font-weight: 700; }
-  .text-lg  { font-size: 44px; font-weight: 700; }
-  .text-md  { font-size: 36px; font-weight: 400; }
-  .text-sm  { font-size: 32px; font-weight: 400; }
+  .section-heading-text {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-heading-sub {
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 12px;
+  }
+
+  /* ========== カード ========== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 24px 30px;
+  }
+
+  .card-accent {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 24px 30px;
+  }
+
+  /* ========== フォントサイズ（最小32px厳守） ========== */
+  .text-hero { font-size: 72px; font-weight: 900; }
+  .text-xl   { font-size: 56px; font-weight: 900; }
+  .text-lg   { font-size: 44px; font-weight: 700; }
+  .text-md   { font-size: 36px; font-weight: 400; }
+  .text-sm   { font-size: 32px; font-weight: 400; }
   /* 32px未満は存在しない */
 
   .text-bold   { font-weight: 700; }
   .text-center { text-align: center; }
   .text-right  { text-align: right; }
-  .text-muted  { color: #666666; }
 
-  /* レイアウト */
-  .flex       { display: flex; }
-  .flex-col   { flex-direction: column; }
-  .flex-wrap  { flex-wrap: wrap; }
-  .gap-sm     { gap: 10px; }
-  .gap-md     { gap: 20px; }
-  .gap-lg     { gap: 30px; }
+  .color-accent  { color: var(--accent); }
+  .color-primary { color: var(--text-primary); }
+  .color-sub     { color: var(--text-sub); }
+  .color-muted   { color: var(--text-muted); }
+
+  /* ========== レイアウト ========== */
+  .flex         { display: flex; }
+  .flex-col     { flex-direction: column; }
+  .flex-wrap    { flex-wrap: wrap; }
+  .flex-1       { flex: 1; }
+  .gap-xs       { gap: 8px; }
+  .gap-sm       { gap: 12px; }
+  .gap-md       { gap: 20px; }
+  .gap-lg       { gap: 30px; }
+  .gap-xl       { gap: 40px; }
   .justify-between { justify-content: space-between; }
+  .justify-center  { justify-content: center; }
   .align-center    { align-items: center; }
+  .align-baseline  { align-items: baseline; }
 
   .w-half { width: 48%; }
   .w-full { width: 100%; }
 
-  /* ページ番号 */
-  .page-number {
-    position: absolute;
-    bottom: 20px;
-    right: 30px;
-    font-size: 32px;
-    color: #999999;
+  .columns-2 {
+    display: flex;
+    gap: 40px;
   }
 
-  /* 注意枠（矛盾・要確認表示用） */
+  .columns-2 > .col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .columns-3 {
+    display: flex;
+    gap: 24px;
+  }
+
+  .columns-3 > .col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ========== ページ番号 ========== */
+  .page-number {
+    position: absolute;
+    bottom: 28px;
+    right: 40px;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  /* ========== 注意枠（矛盾・要確認表示用） ========== */
   .notice-box {
-    border: 3px solid #cc6600;
-    background: #fff8f0;
+    border: 3px solid var(--warning);
+    background: #2a2218;
     padding: 16px 24px;
     margin-top: 16px;
     font-size: 32px;
+    color: var(--text-body);
   }
 
   .notice-box-title {
     font-weight: 700;
-    color: #cc6600;
+    color: var(--warning);
     margin-bottom: 8px;
+    font-size: 34px;
+  }
+
+  /* ========== メニューアイテム共通 ========== */
+  .menu-item-row {
+    display: flex;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .menu-item-row:last-child {
+    border-bottom: none;
+  }
+
+  .menu-item-name {
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--text-primary);
+    flex-shrink: 0;
+  }
+
+  .menu-item-leader {
+    flex: 1;
+    border-bottom: 1px dashed var(--border);
+    margin: 0 12px;
+    min-width: 40px;
+    align-self: center;
+    height: 0;
+    position: relative;
+    top: -6px;
+  }
+
+  .menu-item-price {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .menu-item-note {
+    font-size: 32px;
+    color: var(--text-sub);
+    padding: 2px 0 6px 0;
+  }
+
+  .menu-item-limited {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg-primary);
+    font-size: 32px;
+    font-weight: 700;
+    padding: 2px 14px;
+    margin-right: 8px;
+  }
+
+  .menu-item-unconfirmed {
+    color: var(--error);
+    font-weight: 700;
+    font-size: 32px;
   }
 </style>
-<!-- テンプレートごとの追加スタイルはここに挿入 -->
 {{EXTRA_STYLES}}
 </head>
 <body>

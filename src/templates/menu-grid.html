@@ -1,0 +1,162 @@
+<!-- メニュースライド（グリッド/カード型） -->
+<!-- 参考: トッピング画面の3x2グリッドカード -->
+<style>
+  .grid-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .grid-container {
+    display: grid;
+    gap: 20px;
+    flex: 1;
+  }
+
+  /* 3カラム x 2行 */
+  .grid-3x2 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+
+  /* 2カラム x 2行 */
+  .grid-2x2 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+
+  /* 2カラム x 3行 */
+  .grid-2x3 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+  }
+
+  .grid-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .grid-card-name {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .grid-card-desc {
+    font-size: 32px;
+    color: var(--text-sub);
+    line-height: 1.4;
+  }
+
+  .grid-card-price {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 8px;
+  }
+
+  .grid-card-price-unit {
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--text-sub);
+  }
+
+  .grid-card-note {
+    font-size: 32px;
+    color: var(--text-muted);
+  }
+
+  .grid-card-limited {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg-primary);
+    font-size: 32px;
+    font-weight: 700;
+    padding: 2px 14px;
+  }
+
+  /* セットメニュー用カード */
+  .set-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 20px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .set-card-left {
+    flex: 1;
+  }
+
+  .set-card-label {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .set-card-name {
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .set-card-desc {
+    font-size: 32px;
+    color: var(--text-sub);
+    margin-top: 4px;
+  }
+
+  .set-card-right {
+    text-align: right;
+    flex-shrink: 0;
+    padding-left: 24px;
+  }
+
+  .set-card-price-label {
+    font-size: 32px;
+    color: var(--text-sub);
+  }
+
+  .set-card-price {
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  /* 税表記 */
+  .grid-tax-note {
+    font-size: 32px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: auto;
+    padding-top: 16px;
+  }
+</style>
+
+<!-- ページヘッダー -->
+<div class="page-header">
+  <div class="page-header-sub">{{HEADER_SUB}}</div>
+  <div class="page-header-row">
+    <div class="page-header-title">{{HEADER_TITLE}}</div>
+    <div class="page-header-label">{{HEADER_LABEL}}</div>
+  </div>
+  <div class="page-header-rule"></div>
+</div>
+
+<!-- グリッド本体 -->
+<div class="grid-body" id="grid-content">
+  {{GRID_CONTENT}}
+</div>
+
+<div class="grid-tax-note">{{TAX_NOTE}}</div>
