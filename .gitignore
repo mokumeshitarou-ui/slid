@@ -4,5 +4,7 @@ dist/
 output/*.png
 output/*.zip
 runs/*/
+test-run/slides/*.png
+test-run/slides/*.html
 *.log
 .DS_Store
