@@ -1,72 +1,120 @@
 {
-  "meta": {
-    "title": "AI時代のプロダクト開発",
-    "theme": "modern",
-    "lang": "ja",
-    "aspectRatio": "16:9"
+  "schema": "INPUT_PACK_V1",
+  "shop": {
+    "name": "野呂松飯店",
+    "area": "豊中・岡町",
+    "address": "大阪府豊中市岡町北1-2-3",
+    "access": "阪急岡町駅 徒歩2分",
+    "hours": "11:00〜23:00（L.O. 22:30）",
+    "closed_days": "火曜日",
+    "phone": "06-1234-5678",
+    "payment": "現金のみ",
+    "parking": "なし（近隣コインP）",
+    "seats": "カウンター8席・テーブル12席",
+    "notes": ["全席禁煙", "テイクアウト可"]
   },
-  "slides": [
-    {
-      "id": 1,
-      "type": "title",
-      "content": {
-        "title": "AI時代のプロダクト開発",
-        "subtitle": "LLMを活用した開発ワークフローの革新",
-        "author": "slid demo",
-        "date": "2026-02"
-      }
-    },
-    {
-      "id": 2,
-      "type": "content",
-      "content": {
-        "title": "なぜ今AIなのか",
-        "body": "生成AIの急速な進化により、ソフトウェア開発のあり方が根本から変わりつつあります。",
-        "bullets": [
-          "コード生成の精度が飛躍的に向上",
-          "自然言語による要件定義が可能に",
-          "テスト・レビューの自動化"
+  "menu": {
+    "tax": "included",
+    "categories": [
+      {
+        "category_id": "cat_001",
+        "category_name": "麺類",
+        "category_note": "大盛 各+150円",
+        "items": [
+          { "item_id": "item_001", "name": "豚骨ラーメン", "price_text": "800円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_002", "name": "味噌ラーメン", "price_text": "950円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_003", "name": "中華そば", "price_text": "750円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_004", "name": "タンメン", "price_text": "900円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_005", "name": "チャンポン", "price_text": "950円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_006", "name": "焼きそば", "price_text": "800円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_007", "name": "五目あんかけそば", "price_text": "950円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_008", "name": "スタミナラーメン", "price_text": "1000円", "note": "にんにく増量可", "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_009", "name": "冷やし中華", "price_text": "900円", "note": "夏季限定", "limited": true, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null }
+        ]
+      },
+      {
+        "category_id": "cat_002",
+        "category_name": "ご飯もの",
+        "category_note": null,
+        "items": [
+          { "item_id": "item_010", "name": "チャーハン", "price_text": "750円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_011", "name": "天津飯", "price_text": "800円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_012", "name": "中華丼", "price_text": "850円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_013", "name": "回鍋肉丼", "price_text": "900円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_014", "name": "麻婆丼", "price_text": "900円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_015", "name": "カレーチャーハン", "price_text": "850円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null }
+        ]
+      },
+      {
+        "category_id": "cat_003",
+        "category_name": "一品料理",
+        "category_note": null,
+        "items": [
+          { "item_id": "item_016", "name": "餃子（6個）", "price_text": "400円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_017", "name": "春巻き（3本）", "price_text": "450円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_018", "name": "唐揚げ", "price_text": "550円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_019", "name": "麻婆豆腐", "price_text": "700円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_020", "name": "回鍋肉", "price_text": "750円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_021", "name": "エビチリ", "price_text": "800円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_022", "name": "酢豚", "price_text": "800円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_023", "name": "八宝菜", "price_text": "800円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_024", "name": "野菜炒め", "price_text": "650円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_025", "name": "レバニラ", "price_text": "750円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null }
+        ]
+      },
+      {
+        "category_id": "cat_004",
+        "category_name": "定食",
+        "category_note": "ライス・スープ・小鉢付き",
+        "items": [
+          { "item_id": "item_026", "name": "唐揚げ定食", "price_text": "850円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_027", "name": "麻婆豆腐定食", "price_text": "900円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_028", "name": "レバニラ定食", "price_text": "900円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_029", "name": "エビチリ定食", "price_text": "1000円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_030", "name": "日替わり定食", "price_text": "800円", "note": "平日限定 11:00-14:00", "limited": true, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null }
+        ]
+      },
+      {
+        "category_id": "cat_005",
+        "category_name": "セットメニュー",
+        "category_note": null,
+        "items": [
+          { "item_id": "item_031", "name": "ラーメン+半チャーハン", "price_text": "1050円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_032", "name": "ラーメン+餃子", "price_text": "1050円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_033", "name": "チャーハン+餃子", "price_text": "1000円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null }
+        ]
+      },
+      {
+        "category_id": "cat_006",
+        "category_name": "トッピング",
+        "category_note": null,
+        "items": [
+          { "item_id": "item_034", "name": "煮卵", "price_text": "100円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_035", "name": "チャーシュー", "price_text": "200円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_036", "name": "メンマ", "price_text": "100円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_037", "name": "もやし", "price_text": "50円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_038", "name": "ネギ増し", "price_text": "100円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null }
+        ]
+      },
+      {
+        "category_id": "cat_007",
+        "category_name": "飲み物",
+        "category_note": null,
+        "items": [
+          { "item_id": "item_039", "name": "瓶ビール", "price_text": "550円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_040", "name": "生ビール", "price_text": "500円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_041", "name": "ハイボール", "price_text": "400円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_042", "name": "レモンサワー", "price_text": "400円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_043", "name": "紹興酒", "price_text": "450円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null },
+          { "item_id": "item_044", "name": "烏龍茶", "price_text": "250円", "note": null, "limited": false, "needs_confirmation": false, "confirmation_reasons": [], "user_confirmed": false, "ocr_confidence": null, "source_image_index": 0, "location_hint": null }
         ]
       }
-    },
-    {
-      "id": 3,
-      "type": "two-column",
-      "content": {
-        "title": "従来 vs AI駆動開発",
-        "left": {
-          "heading": "従来の開発",
-          "bullets": [
-            "手動でコーディング",
-            "仕様書ベースの設計",
-            "長い開発サイクル"
-          ]
-        },
-        "right": {
-          "heading": "AI駆動開発",
-          "bullets": [
-            "AIがコード提案",
-            "対話ベースの設計",
-            "高速イテレーション"
-          ]
-        }
-      }
-    },
-    {
-      "id": 4,
-      "type": "quote",
-      "content": {
-        "quote": "最高のツールは、使い方を考えさせないツールである。",
-        "attribution": "— Design principle"
-      }
-    },
-    {
-      "id": 5,
-      "type": "end",
-      "content": {
-        "title": "ありがとうございました",
-        "body": "ご質問はお気軽にどうぞ"
-      }
-    }
-  ]
+    ]
+  },
+  "input_source": "manual",
+  "confirmed_addons": [
+    { "text": "2025年4月より一部価格改定", "confirmed_by": "shop", "date": "2025-04-01" },
+    { "text": "出前は休止中", "confirmed_by": "shop", "date": "2025-01-15" }
+  ],
+  "genre_hint": "machichuuka"
 }

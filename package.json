@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "generate": "tsx src/pipeline.ts",
+    "render": "tsx src/restaurant-pipeline.ts",
     "typecheck": "tsc --noEmit",
     "install:browser": "playwright install chromium"
   },
