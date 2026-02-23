@@ -90,18 +90,31 @@ interface InputPack {
   menu: {
     tax: "included" | "excluded" | "unknown";
     categories: {
+      category_id: string;           // 一意ID（例: "cat_001"）。数値連番。日本語を含めない
       category_name: string;
       category_note: string | null;  // カテゴリ注記（例: "各種大盛 +200円"）
       items: {
+        item_id: string;             // 一意ID（例: "item_001"）。数値連番。日本語を含めない
         name: string;
         price_text: string | null;   // 原文そのまま（例: "９５０円", "＋２００円"）
         note: string | null;         // 注記（例: "期間限定", "数量限定"）
         limited: boolean;
         needs_confirmation: boolean; // OCR読取り不確実 → ユーザー確認必要
+        confirmation_reason: ConfirmationReason | null; // 要確認の理由
+        user_confirmed: boolean;     // ユーザーが確認済み（修正後 true にする）
         ocr_confidence: number | null; // OCR信頼度 0.0〜1.0（手入力時は null）
+        source_image_index: number | null; // OCR元画像の番号（手入力時は null）
+        location_hint: string | null;      // OCR元画像内の位置ヒント（例: "上部中央"）※optional
       }[];
     }[];
   };
+
+  // OCR 要確認理由コード
+  type ConfirmationReason =
+    | "LOW_CONFIDENCE"     // confidence < 0.8
+    | "MISSING_PRICE"      // price_text が空 or 価格として不自然
+    | "SUSPICIOUS_CHARS"   // 商品名に □, ?, 文字化け疑い
+    | "MAYBE_MERGED_TEXT"; // 注記が品名に混入している疑い（例: "大盛＋200円"が品名に入っている）
 
   input_source: "manual" | "ocr"; // 入力方法（OCR → 確認ステップ必須）
 
@@ -160,28 +173,78 @@ interface InputPack {
 | ユーザーが確定するまで生成に進まない | 誤ったメニューでスライドを作らない |
 | 画像は SLIDE_DATA_PACK に参照を保存 | 後から原本を確認できるように |
 | 手入力との併用も可能 | OCRで取れない部分を手動で補完 |
+| **要確認 0件 → 確認画面を自動スキップ** | OCR精度が高い場合は手間を省く |
+
+#### needs_confirmation 自動判定ルール
+
+| ルール | confirmation_reason | 閾値 |
+|-------|---------------------|------|
+| confidence < 0.8 | `LOW_CONFIDENCE` | 0.8（実運用で調整可） |
+| price_text が空 or 価格として不自然 | `MISSING_PRICE` | — |
+| 商品名に □, ?, 文字化け疑いの文字 | `SUSPICIOUS_CHARS` | — |
+| 注記が品名に混入している疑い | `MAYBE_MERGED_TEXT` | — |
+
+要確認理由は UI で行ごとに表示し、編集者が「何を直すべきか」一目で分かるようにする。
 
 #### MVP での実装範囲
 
 - **Phase 1（MVP）**: 手入力のみ。InputPack を直接 JSON で用意
-- **Phase 2**: OCR取り込み + 確認UI（CLI: テーブル表示で行ごとに確認 / Web UI: 編集可能テーブル）
+- **Phase 2**: OCR取り込み + 確認UI（CLI版）
+- **Phase 3**: Web UI版（3カラムレイアウト）、画像切り抜き・バウンディングボックス
 - OCRエンジンは Gemini Vision（既にAPIキーがある）
 
-#### 確認UI（Phase 2 最小仕様）
+#### 確認UI（Phase 2 CLI版 最小仕様）
 
 ```
-[OCR結果確認]
+[OCR結果確認] 合計: 9カテゴリ / 44件 / 要確認: 6件
 
-カテゴリ: 麺類
-  1. 豚骨ラーメン ......... 800円     OK
-  2. 味噌ラーメン ......... 950円     OK
-  3. ???ラーメン .......... 9?0円     ← 要確認（confidence: 0.45）
+カテゴリ: 麺類 (cat_001)
+  1. [item_001] 豚骨ラーメン ......... 800円     OK
+  2. [item_002] 味噌ラーメン ......... 950円     OK
+  3. [item_003] ???ラーメン .......... 9?0円     ! LOW_CONFIDENCE (0.45)
 
-カテゴリ: ご飯もの
-  4. チャーハン ........... 750円     OK
-  5. 天津飯 ............... 800円     OK
+カテゴリ: ご飯もの (cat_002)
+  4. [item_004] チャーハン ........... 750円     OK
+  5. [item_005] 天大飯 ............... 800円     ! SUSPICIOUS_CHARS
 
-→ 修正する番号を入力（0で確定）:
+→ 修正する番号を入力（0で全て確定して次へ）:
+→ 要確認のみ表示 [f] / 全件表示 [a] / 行追加 [+] / 行削除 [-]:
+```
+
+#### 確認UI（Phase 3 Web版 ワイヤー）
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  メニュー確認（OCR）  合計: 9カテゴリ / 44件  要確認: 6件    │
+│  [要確認のみ] [全件]  検索: [________]  [全て確定して次へ →]  │
+├───────────────┬───────────────────────────────┬──────────────┤
+│  画像一覧      │  メニュー一覧（編集可テーブル）  │  詳細         │
+│               │                               │              │
+│  [thumb1]     │  カテゴリ: 麺類                 │  元画像表示   │
+│  [thumb2]     │  ┌─────┬──────┬────┬────┬──┐  │  location_hint│
+│  ...          │  │品名  │価格   │注記│信頼│! │  │              │
+│               │  ├─────┼──────┼────┼────┼──┤  │  確認理由:    │
+│  クリックで    │  │豚骨… │800円  │    │0.98│  │  │  LOW_CONF... │
+│  拡大表示     │  │???… │9?0円  │    │0.45│! │  │              │
+│               │  └─────┴──────┴────┴────┴──┘  │  [確定]       │
+│               │  [行追加] [行削除]               │              │
+└───────────────┴───────────────────────────────┴──────────────┘
+```
+
+- セル直接編集（品名・価格・注記）
+- 要確認行のみハイライト表示
+- 確定ボタンで `user_confirmed = true`
+- 画像切り抜き・バウンディングボックスは Phase 3 以降（サムネ + 拡大で代替）
+
+#### OCR確認後のデータフロー
+
+```
+OCR抽出（draft） → 確認・修正 → 確定 InputPack（input_source: "ocr"）
+                                    ↓
+                         全項目の user_confirmed = true を保証
+                         needs_confirmation が残っている項目 → RUN_REPORT に警告
+                                    ↓
+                         通常パイプラインへ（ジャンル判定〜）
 ```
 
 ---
@@ -636,8 +699,20 @@ deviceScaleFactor: 2  // Retina品質（出力: 3840x2160）
 - 禁止文字: OK
 - 禁止表現: OK
 
+## OCR確認結果（input_source: "ocr" の場合のみ）
+- 入力方法: OCR
+- OCR総件数: XX件
+- 要確認件数: XX件 (LOW_CONFIDENCE: X, MISSING_PRICE: X, SUSPICIOUS_CHARS: X, MAYBE_MERGED_TEXT: X)
+- ユーザー確認済み: XX件 / XX件
+- 未確認のまま残った項目: (あれば列挙 → 警告扱い)
+
 ## 要確認事項
 - (needs_confirmation があればここに列挙)
+
+## 選択ログ
+- 提示案数: X案
+- 選択: variant #X / rejected_all (retry: X回)
+- rejection_memo: (あれば記載)
 
 ## conflicts（情報の矛盾）
 - (Web調査で矛盾があった場合にここに列挙)
@@ -741,6 +816,8 @@ src/
   pipeline.ts               # メインパイプライン
 example/
   norumatsu.json            # 野呂松飯店テストデータ
+data/                       # 学習データ（L1以降で使用）
+  selection_stats/           # ジャンル別採用傾向の集計JSON
 ```
 
 ---
@@ -757,6 +834,9 @@ example/
 | PPTX出力 | 編集可能な中間形式 | PptxGenJS |
 | テンプレ追加 | 季節メニュー・セットメニュー等の専用レイアウト | 運用実績後 |
 | ワンクリックセットアップ | install.bat / install.command で Node/Playwright/フォント一括セットアップ | 配布段階 |
+| 学習機能 L0（SelectionLog） | デザイン案の選択/却下ログを保存（セクション14.3） | **MVP に含める**（工数ほぼゼロ） |
+| 学習機能 L1（プロンプト注入） | 蓄積ログをジャンル別集計 → ThemeGenerator プロンプトに採用傾向を注入 | データ10〜20件蓄積後 |
+| 学習機能 L2（パレット重み） | ジャンル別許可パレットに採用率ベースの動的重みを付与 | データ50件以上蓄積後 |
 
 ### 14.1 パッチJSON微調整（設計メモ）
 
@@ -791,6 +871,7 @@ output/
       genre_result.json      # ジャンル判定結果
       theme_tokens.json      # 選択されたThemeTokens
       slide_plan.json        # 分割計画
+      selection_log.json     # デザイン案選択ログ（学習機能の基礎データ）
       preview/               # プレビューPNG
       slides/                # 本番PNG
       run_report.md          # QAレポート
@@ -800,6 +881,76 @@ output/
 - 同じ店を再生成する際に前回の設定を引き継げる
 - パッチ微調整時に前回のTokensをベースにできる
 - デバッグ・品質改善の追跡が容易
+
+### 14.3 選択ログ・学習機能（SelectionLog）
+
+ユーザーがどのデザイン案を選んだか（または全却下したか）を蓄積し、ジャンルごとに採用されやすいデザインを学習する。
+
+#### L0: ログ保存（MVP に含める）
+
+パイプラインの選択ステップで `selection_log.json` を1ファイル書くだけ。追加工数ほぼゼロ。
+
+```typescript
+interface SelectionLog {
+  run_id: string;
+  genre: string;
+  sub_types: string[];
+  shop_name: string;
+  timestamp: string;               // ISO 8601
+
+  // 提示された全案のトークン
+  candidates: ThemeTokens[];
+
+  // ユーザーの行動
+  action: "selected" | "rejected_all";
+  selected_variant_id: number | null;  // rejected_all なら null
+  rejection_memo: string | null;       // 全却下時の理由メモ（例: "暗すぎた", "赤が強すぎた"）
+
+  // rejected_all → 再生成した場合
+  retry_count: number;                 // 再生成回数（0 = 一発OK）
+}
+```
+
+**rejected_all 時の理由メモ**: 全案却下の場合に「何が嫌だったか」を1行メモで残す。L1で使う。
+CLI: `→ 理由を一言（任意、Enter でスキップ）: 暗すぎた`
+
+#### L1: プロンプト注入（Phase 2・データ10〜20件蓄積後）
+
+蓄積した SelectionLog をジャンル別に集計し、ThemeGenerator の Gemini プロンプトに few-shot 例として注入する。モデル学習は不要。
+
+```
+// ThemeGenerator のGeminiプロンプトに追加する例
+過去の選択傾向（ラーメン店、15件）:
+- 暗背景(#1A1A1A系) + オレンジアクセント: 採用率 73%
+- 白背景 + 赤アクセント: 採用率 20%
+- band 行スタイル: 採用率 80%
+- 全却下理由: "明るすぎ"(2件), "色が地味"(1件)
+この傾向を考慮して3案生成してください。ただし多様性も確保し、全案が同じ系統にならないこと。
+```
+
+**コスト**: 追加トークン数十行分。API呼び出し回数の増加なし。
+
+#### L2: パレット重み動的調整（Phase 3・データ50件以上蓄積後）
+
+`palettes.ts` のジャンル別許可パレットに、採用率ベースの重みを動的に付与する。
+
+```typescript
+// 例: ラーメンジャンルの bg 選択時
+// 蓄積データから: #1A1A1A が 73% 採用、#FAFAFA が 20% 採用
+// → ランダム生成時に #1A1A1A が出やすくなる（ただし多様性のため完全には偏らせない）
+```
+
+#### 集計ファイル
+
+```
+data/
+  selection_stats/
+    ramen.json          # ラーメン店の採用傾向
+    machichuuka.json    # 町中華の採用傾向
+    ...
+```
+
+L1以降で使用。ジャンル別に SelectionLog を集計した統計データ。
 
 ---
 
