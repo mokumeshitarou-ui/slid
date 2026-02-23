@@ -877,13 +877,23 @@ Planner がどの入力データに対してどのテンプレートを使うか
 
 ## 8. デザイン案選択フロー
 
-### 8.1 プレビュー生成（代表3枚だけ）
+### 8.1 プレビュー生成（代表3枚・固定）
 
-全デッキを3〜5案生成すると重いので、プレビューは代表3枚:
+全デッキを3〜5案×全枚数生成すると重いので、プレビューは**以下の3枚固定**:
 
-1. **Title** スライド（雰囲気が最も出る）
-2. **Info** スライド（視認性チェック）
-3. **Menu** スライド（最も典型的なカテゴリ1枚）
+| # | テンプレート | 選択基準 | チェック観点 |
+|---|------------|---------|------------|
+| 1 | `T0_TITLE` | 常に1枚目 | 色・雰囲気・店名の見え方 |
+| 2 | `T1_INFO` | 常に2枚目 | 文字の視認性・行間・ラベル幅 |
+| 3 | `T2_MENU_1COL` | **最も項目数が多いカテゴリの1枚目** | メニュー行の密度・価格右揃え・注記表示 |
+
+**選択ルール（3枚目）**:
+- `SlidePlan.slides` から `template === "T2_MENU_1COL"` をフィルタ
+- その中で `payload.items.length` が最大のスライドを選択
+- 同数の場合は先頭（InputPack の categories 順で最初）を採用
+- T2 が存在しない場合（全カテゴリが T3_MENU_2COL のみ）は T3 の先頭を代用
+
+**プレビュー枚数**: 3案なら 3×3 = 9枚、5案なら 5×3 = 15枚
 
 ### 8.2 選択後に本番レンダリング
 
@@ -962,12 +972,52 @@ deviceScaleFactor: 2  // Retina品質（出力: 3840x2160）
 
 | チェック | 方法 | 失敗時 |
 |---------|------|--------|
-| 全件掲載 | InputPack.menu の総 items 数 = SlidePlan の掲載数 | エラー停止 |
+| 全件掲載 | **集合比較**（後述） | エラー停止 |
 | 最小フォント | 54px未満のテキスト要素がないこと | 分割して再レンダリング |
 | overflow | DOM の scrollHeight > clientHeight | items_per_slide を減らして再計画 |
 | 禁止文字 | 絵文字/機種依存文字の正規表現検出 | 自動除去（意味は保持） |
 | 禁止表現 | 「おすすめ」「人気」等が入力の evidence なしで混入 | 除去 |
 | カテゴリ順 | InputPack の categories 順 = SlidePlan の順 | エラー |
+
+### 10.1.1 全件掲載チェックの厳密定義
+
+**数だけでなく集合（ID セット）で比較する**。件数一致でも ID が入れ替わっていたら検出できないため。
+
+```typescript
+function validateAllItemsCovered(input: InputPack, plan: SlidePlan): QAResult {
+  // InputPack 側: 全 item_id を収集
+  const inputIds = new Set(
+    input.menu.categories.flatMap(c => c.items.map(i => i.item_id))
+  );
+
+  // SlidePlan 側: 全 item_id を収集（T2/T3 のメニュー系スライドから）
+  const planIds = new Set(
+    plan.slides
+      .flatMap(s => {
+        if (s.template === "T2_MENU_1COL") return s.payload.items.map(i => i.item_id);
+        if (s.template === "T3_MENU_2COL") return s.columns.flatMap(c => c.payload.items.map(i => i.item_id));
+        return [];
+      })
+  );
+
+  // 差分チェック
+  const missing = [...inputIds].filter(id => !planIds.has(id));   // 掲載漏れ
+  const extra   = [...planIds].filter(id => !inputIds.has(id));   // 入力にない項目（ハルシネーション検知）
+
+  return {
+    passed: missing.length === 0 && extra.length === 0,
+    input_count: inputIds.size,
+    plan_count: planIds.size,
+    missing_ids: missing,   // 掲載漏れ item_id リスト
+    extra_ids: extra,       // 余分な item_id リスト（あれば即エラー）
+  };
+}
+```
+
+**チェック内容**:
+- `missing_ids`: 掲載漏れ → **エラー停止**（全メニュー掲載の絶対ルール違反）
+- `extra_ids`: 入力にない item_id が Plan に存在 → **エラー停止**（ハルシネーション疑い）
+- 両方空なら OK
 
 ### 10.2 RUN_REPORT.md の内容
 
@@ -1133,7 +1183,39 @@ output/runs/{run_id}/
   run_report.md
 ```
 
-### 14.2 Gemini API リトライ戦略
+### 14.2 input_hash（入力データのフィンガープリント）
+
+InputPack の内容が変わったかどうかを高速に判定するため、**SHA-256 ハッシュ**を計算して SlidePlan・RUN_REPORT に記録する。
+
+```typescript
+// 計算方法
+import { createHash } from "node:crypto";
+
+function computeInputHash(inputPack: InputPack): string {
+  // JSON.stringify のキー順序を安定させるため、キーをソートして正規化する
+  const canonical = JSON.stringify(inputPack, Object.keys(inputPack).sort());
+  return createHash("sha256").update(canonical).digest("hex").slice(0, 16);
+}
+```
+
+**用途**:
+- SlidePlan に `input_hash` を埋め込み、InputPack が変更されていないことを検証
+- 同一ハッシュなら前回の SlidePlan を再利用可能（キャッシュ）
+- RUN_REPORT にも記録し、再現性を担保
+
+**SlidePlan への追加フィールド**:
+```typescript
+interface SlidePlan {
+  run_id: string;
+  input_hash: string;       // ← 追加: InputPack の SHA-256 先頭16文字
+  theme_id: string;
+  total_slides: number;
+  total_items: number;
+  slides: SlideSpec[];
+}
+```
+
+### 14.3 Gemini API リトライ戦略
 
 | 条件 | 動作 |
 |------|------|
