@@ -1,0 +1,26 @@
+{
+  "name": "slid",
+  "version": "0.1.0",
+  "description": "AI-driven slide generator: JSON → Gemini API → HTML/CSS → Playwright → PNG",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/pipeline.ts",
+    "typecheck": "tsc --noEmit",
+    "install:browser": "playwright install chromium"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "archiver": "^7.0.0",
+    "playwright": "^1.50.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

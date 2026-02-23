@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "title": "AI時代のプロダクト開発",
+    "theme": "modern",
+    "lang": "ja",
+    "aspectRatio": "16:9"
+  },
+  "slides": [
+    {
+      "id": 1,
+      "type": "title",
+      "content": {
+        "title": "AI時代のプロダクト開発",
+        "subtitle": "LLMを活用した開発ワークフローの革新",
+        "author": "slid demo",
+        "date": "2026-02"
+      }
+    },
+    {
+      "id": 2,
+      "type": "content",
+      "content": {
+        "title": "なぜ今AIなのか",
+        "body": "生成AIの急速な進化により、ソフトウェア開発のあり方が根本から変わりつつあります。",
+        "bullets": [
+          "コード生成の精度が飛躍的に向上",
+          "自然言語による要件定義が可能に",
+          "テスト・レビューの自動化"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "type": "two-column",
+      "content": {
+        "title": "従来 vs AI駆動開発",
+        "left": {
+          "heading": "従来の開発",
+          "bullets": [
+            "手動でコーディング",
+            "仕様書ベースの設計",
+            "長い開発サイクル"
+          ]
+        },
+        "right": {
+          "heading": "AI駆動開発",
+          "bullets": [
+            "AIがコード提案",
+            "対話ベースの設計",
+            "高速イテレーション"
+          ]
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "quote",
+      "content": {
+        "quote": "最高のツールは、使い方を考えさせないツールである。",
+        "attribution": "— Design principle"
+      }
+    },
+    {
+      "id": 5,
+      "type": "end",
+      "content": {
+        "title": "ありがとうございました",
+        "body": "ご質問はお気軽にどうぞ"
+      }
+    }
+  ]
+}
