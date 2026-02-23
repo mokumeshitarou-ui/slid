@@ -55,7 +55,24 @@ slid は、飲食店を撮影した動画に差し込む **情報スライド（
 | **Renderer** | HTML/CSS生成 → Playwright PNG化 | SlidePlan + ThemeTokens | PNG連番 |
 | **QAValidator** | 全件掲載・overflow・禁止文字チェック | InputPack + SlidePlan + PNG | RUN_REPORT |
 
-### 2.2 流用する既存コード
+### 2.2 LLM責務境界
+
+AIの役割と決定論コードの役割を明確に分離する。これにより「読める」「正しい」の2大原則をコードで保証しつつ、デザインの自由度はAIに任せる。
+
+| レイヤー | 責務 | 担当 |
+|---------|------|------|
+| **GenreSelector** | 店名・メニュー構成からジャンル候補を推定 | AI（Gemini） |
+| **ThemeGenerator** | ジャンル許可パレット内でデザイントークン3〜5案を生成 | AI（Gemini） |
+| **SlidePlanner** | スライド分割・行数・テンプレ選択 | 決定論コード |
+| **Renderer** | 固定テンプレHTML + CSS変数注入でPNG生成 | 決定論コード |
+| **QAValidator** | 全件掲載・overflow・禁止文字・カテゴリ順の検証 | 決定論コード |
+
+**原則**:
+- AIにHTMLを自由生成させない。AIが決めるのは ThemeTokens（色・帯・パターン）のみ
+- 構造（グリッド・フォントサイズ・行数上限・分割規則）と正確性（全件掲載・カテゴリ順）はコードが保証する
+- 「読める」「正しい」を破らない限り、ジャンルに則りながら自由なデザインで生成してよい
+
+### 2.3 流用する既存コード
 
 | 既存モジュール | 流用方法 |
 |--------------|---------|
@@ -100,21 +117,27 @@ interface InputPack {
         note: string | null;         // 注記（例: "期間限定", "数量限定"）
         limited: boolean;
         needs_confirmation: boolean; // OCR読取り不確実 → ユーザー確認必要
-        confirmation_reason: ConfirmationReason | null; // 要確認の理由
+        confirmation_reasons: ConfirmationReason[]; // 要確認の理由（複数該当あり。該当なしは空配列）
         user_confirmed: boolean;     // ユーザーが確認済み（修正後 true にする）
         ocr_confidence: number | null; // OCR信頼度 0.0〜1.0（手入力時は null）
-        source_image_index: number | null; // OCR元画像の番号（手入力時は null）
+        source_image_index: number;  // OCR元画像の番号（手入力時は 0）※必須
         location_hint: string | null;      // OCR元画像内の位置ヒント（例: "上部中央"）※optional
       }[];
     }[];
   };
 
-  // OCR 要確認理由コード
+  // OCR 要確認理由コード（1項目に複数該当あり）
   type ConfirmationReason =
-    | "LOW_CONFIDENCE"     // confidence < 0.8
+    | "LOW_CONFIDENCE"     // ocr_confidence < 0.8
     | "MISSING_PRICE"      // price_text が空 or 価格として不自然
     | "SUSPICIOUS_CHARS"   // 商品名に □, ?, 文字化け疑い
     | "MAYBE_MERGED_TEXT"; // 注記が品名に混入している疑い（例: "大盛＋200円"が品名に入っている）
+
+  // needs_confirmation 判定方式:
+  //   1. ocr_confidence < 0.8 → LOW_CONFIDENCE を追加
+  //   2. ルールベース検査（正規表現等）で残り3種を判定
+  //   3. confirmation_reasons が1つ以上 → needs_confirmation = true
+  // confidence だけでは拾えないケース（文字化け、価格欠損等）をルールベースで補完する。
 
   input_source: "manual" | "ocr"; // 入力方法（OCR → 確認ステップ必須）
 
@@ -139,6 +162,8 @@ interface InputPack {
 | おすすめ/人気は根拠がある場合のみ | ハルシネーション防止 |
 | OCR入力は確認ステップ必須 | 読取り誤りの修正機会を保証する |
 | needs_confirmation は RUN_REPORT に列挙 | ユーザーが見落とさないように |
+| ID採番は出現順の連番で固定 | `cat_001`, `cat_002`, ... / `item_001`, `item_002`, ... の形式。ソート不可。途中挿入時は末尾に追番（`item_049`）。日本語を含めない |
+| source_image_index は必須 | 手入力時は `0` を設定。OCR時は元画像の番号。location_hint は optional |
 
 ### 3.3 OCR取り込みフロー（メニュー画像 → InputPack）
 
@@ -177,14 +202,14 @@ interface InputPack {
 
 #### needs_confirmation 自動判定ルール
 
-| ルール | confirmation_reason | 閾値 |
-|-------|---------------------|------|
-| confidence < 0.8 | `LOW_CONFIDENCE` | 0.8（実運用で調整可） |
-| price_text が空 or 価格として不自然 | `MISSING_PRICE` | — |
-| 商品名に □, ?, 文字化け疑いの文字 | `SUSPICIOUS_CHARS` | — |
-| 注記が品名に混入している疑い | `MAYBE_MERGED_TEXT` | — |
+| ルール | confirmation_reasons に追加 | 判定方式 | 閾値 |
+|-------|---------------------------|---------|------|
+| confidence < 0.8 | `LOW_CONFIDENCE` | confidence 値 | 0.8（実運用で調整可） |
+| price_text が空 or 価格として不自然 | `MISSING_PRICE` | ルールベース（正規表現） | — |
+| 商品名に □, ?, 文字化け疑いの文字 | `SUSPICIOUS_CHARS` | ルールベース（正規表現） | — |
+| 注記が品名に混入している疑い | `MAYBE_MERGED_TEXT` | ルールベース（パターンマッチ） | — |
 
-要確認理由は UI で行ごとに表示し、編集者が「何を直すべきか」一目で分かるようにする。
+1項目に複数の理由が該当する場合はすべて `confirmation_reasons[]` に格納する。要確認理由は UI で行ごとに表示し、編集者が「何を直すべきか」一目で分かるようにする。
 
 #### MVP での実装範囲
 
@@ -282,9 +307,40 @@ kaisen:    sushi / kaisendon / robata
 
 ### 4.3 ジャンル判定フロー（混合方式）
 
-1. `genre_hint` がある → そのまま採用
+1. `genre_hint` がある → そのまま採用（`selected_by: "hint"`）
 2. `genre_hint` が null → AI が店名・メニュー構成から候補3つ + 理由を返す
 3. ユーザーが1つ確定（CLI: 番号選択 / 将来Discord: リアクション選択）
+
+### 4.4 GenreResult スキーマ
+
+GenreSelector の出力。ThemeGenerator への入力として使う。
+
+```typescript
+interface GenreResult {
+  // AI（またはヒント）による候補リスト
+  candidates: {
+    genre: GenreId;            // 例: "machichuuka"
+    subtypes: string[];        // 例: ["standard"]
+    confidence: number;        // 0.0〜1.0
+    reasons: string[];         // 例: ["メニューに中華系が多い", "店名に「飯店」"]
+  }[];
+
+  // ユーザー確定結果
+  selected: {
+    genre: GenreId;
+    subtypes: string[];
+    selected_by: "model" | "user" | "hint";
+    // "model" = AI候補1位をそのまま採用
+    // "user"  = ユーザーが候補から選択 or 上書き
+    // "hint"  = genre_hint による事前指定
+  };
+}
+
+// GenreId はジャンルID文字列のユニオン型
+type GenreId =
+  | "machichuuka" | "ramen" | "kaisen" | "yakiniku"
+  | "izakaya" | "soba" | "udon" | "teishoku" | "bento";
+```
 
 ---
 
@@ -555,6 +611,99 @@ density: tight
 └─────────────────────────────────────┘
 ```
 
+### 6.9 表示ルール（確定事項）
+
+テンプレート内の個別要素の表示方法を定義する。「読める」「正しい」を破らないことが最優先。
+
+#### 6.9.1 税表示（tax）
+
+メニュー系スライド（T2/T3）の**フッター左**に固定で1行表示する。
+
+| tax 値 | 表示テキスト |
+|--------|-------------|
+| `"included"` | 税込表示 |
+| `"excluded"` | 税別表示 |
+| `"unknown"` | 税表記不明（店頭表記優先） |
+
+- 各メニュー行には付けない（情報過多の防止）
+- フォントサイズは注記サイズ（42〜48px）、muted 色を使用
+- T0_TITLE / T1_INFO には表示しない
+
+#### 6.9.2 注記（note）の表示
+
+品名の**下の行**に表示する。価格の右揃えを崩さないため、品名行とは別の行に回す。
+
+```
+豚骨ラーメン                    800円    ← 56px, fg色
+  期間限定・数量限定              　       ← 44px, muted色
+味噌ラーメン                    950円
+```
+
+- フォントサイズ: 注記サイズ（42〜48px）
+- 色: `muted` 色（太さ/不透明度で本文と差をつける）
+- **note がある item は Planner で2行分としてカウント**する。入り切らなければ枚数を増やす
+- フォントサイズは下げない（最小42px を守る）
+
+#### 6.9.3 期間限定（limited）の表示
+
+`limited: true` の品は、品名の**後ろ**に角丸テキストラベルを付ける。
+
+```
+豚骨ラーメン [期間限定]          800円
+```
+
+- ラベル背景: `accent` 色、文字: `accent_fg` 色
+- 角丸: ThemeTokens の `radius` 値を使用
+- フォントサイズ: 注記サイズ（42〜48px）
+- 品名の頭を揃えるため、ラベルは品名の前ではなく後ろに配置する
+
+#### 6.9.4 追記（confirmed_addons）の表示
+
+行数で自動分岐する。
+
+| 条件 | 表示方法 |
+|------|---------|
+| 3行以下 | T1_INFO スライドの末尾に「追記」セクションとして挿入 |
+| 4行以上 | 専用スライド（T4_ADDONS）を生成 |
+
+#### 6.9.5 ページ番号
+
+2箇所に表示する。
+
+| 位置 | 形式 | 例 | 用途 |
+|------|------|-----|------|
+| 右下 | グローバル通し番号 | `03/12` | 動画全体での位置把握 |
+| ヘッダー右（メニュー系のみ） | カテゴリ内番号 | `麺類 (1/3)` | カテゴリの分割状態の把握 |
+
+- T0_TITLE にはページ番号を表示しない
+- フォントサイズ: ページ番号サイズ（36〜44px）、muted 色
+
+#### 6.9.6 品名と価格の間（leader）
+
+品名（左寄せ）と価格（右寄せ）の間は**空白（余白）のみ**で繋ぐ。ドットやダッシュは使わない。
+
+```css
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;                 /* 視線を繋ぐ余白 */
+}
+.item-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;    /* 長い名前の折り返し */
+}
+.item-price {
+  flex: 0 0 auto;
+  white-space: nowrap;       /* 価格は折り返さない */
+}
+```
+
+- デフォルト: `leader_style: "none"`（MVP固定）
+- スキーマ上は `"none" | "dash" | "dot"` を定義しておくが、MVP では none のみ使用
+- 視線の接続は「行のカード化」「十分なgap」「価格の右端固定」で担保する
+
 ---
 
 ## 7. スライド分割規則（SlidePlanner）
@@ -592,6 +741,138 @@ density: tight
 
 満たさない場合は T2_MENU_1COL。
 
+### 7.4 SlidePlan スキーマ
+
+SlidePlanner の出力。**描画指示書として完結する**設計。Renderer は SlidePlan + ThemeTokens だけで動き、InputPack を参照しない。
+
+```typescript
+interface SlidePlan {
+  run_id: string;              // ULID
+  theme_id: string;            // 選択された ThemeTokens の variant_id に対応
+  total_slides: number;
+  total_items: number;         // QA用: InputPack の総 items 数と一致すべき
+  slides: SlideSpec[];
+}
+
+// --- 各スライドの仕様 ---
+
+type SlideSpec =
+  | TitleSlide
+  | InfoSlide
+  | Menu1ColSlide
+  | Menu2ColSlide
+  | AddonsSlide;
+
+interface SlideBase {
+  slide_id: string;            // "S001", "S002", ...（通し番号）
+  template: "T0_TITLE" | "T1_INFO" | "T2_MENU_1COL" | "T3_MENU_2COL" | "T4_ADDONS";
+  page: {
+    global: { index: number; total: number };  // 通し番号（1始まり）
+  };
+}
+
+// --- T0_TITLE ---
+interface TitleSlide extends SlideBase {
+  template: "T0_TITLE";
+  payload: {
+    shop_name: string;
+    area: string | null;
+  };
+}
+
+// --- T1_INFO ---
+interface InfoSlide extends SlideBase {
+  template: "T1_INFO";
+  payload: {
+    rows: { label: string; value: string }[];
+    addons_section: { text: string }[] | null;  // 3行以下の confirmed_addons
+  };
+}
+
+// --- T2_MENU_1COL ---
+interface Menu1ColSlide extends SlideBase {
+  template: "T2_MENU_1COL";
+  header: {
+    title: string;                   // カテゴリ名
+    category_note: string | null;    // カテゴリ注記
+    scope_page: { index: number; total: number } | null;  // カテゴリ内ページ（分割時のみ）
+  };
+  payload: {
+    category_id: string;
+    items: SlideMenuItem[];
+  };
+  layout: {
+    items_per_slide: number;
+    leader_style: "none" | "dash" | "dot";
+    density: "tight" | "normal";
+    enlarged: boolean;               // 特大表示モード（1〜3件カテゴリ）
+  };
+  tax_display: string | null;        // フッター税表示テキスト（例: "税込表示"）
+}
+
+// --- T3_MENU_2COL ---
+interface Menu2ColSlide extends SlideBase {
+  template: "T3_MENU_2COL";
+  columns: [MenuColumn, MenuColumn];  // 左列・右列
+  layout: {
+    items_per_col: number;
+    leader_style: "none" | "dash" | "dot";
+    density: "tight" | "normal";
+  };
+  tax_display: string | null;
+}
+
+interface MenuColumn {
+  header: {
+    title: string;
+    category_note: string | null;
+  };
+  payload: {
+    category_id: string;
+    items: SlideMenuItem[];
+  };
+}
+
+// --- T4_ADDONS ---
+interface AddonsSlide extends SlideBase {
+  template: "T4_ADDONS";
+  payload: {
+    rows: { text: string; confirmed_by: "shop" | "user"; date: string }[];
+  };
+}
+
+// --- メニュー項目（描画用。実データ埋め込み + ID保持） ---
+interface SlideMenuItem {
+  item_id: string;             // トレース・QA用（Rendererは使わない）
+  name: string;
+  price_text: string | null;
+  note: string | null;
+  limited: boolean;
+}
+```
+
+**設計原則**:
+- Planに実データを埋め込む。Rendererが InputPack を逆引きしない
+- `item_id` / `category_id` は QA の全件掲載チェック用に保持する（`InputPack.item_id集合 === SlidePlan内item_id集合` で検証）
+- **SlidePlan はユーザー編集対象にしない**。修正は InputPack を直して Plan を再生成する
+- overflow 再分割も SlidePlan 単体で完結する（items を減らして再配置するだけ）
+
+### 7.5 テンプレート決定表
+
+Planner がどの入力データに対してどのテンプレートを使うかのルール。
+
+| 入力データ | テンプレート | 条件 |
+|-----------|------------|------|
+| `shop` 情報 | `T0_TITLE` | 常に1枚目 |
+| `shop` 情報（詳細） | `T1_INFO` | 2枚目〜。6〜8行で分割 |
+| `confirmed_addons`（3行以下） | `T1_INFO` に統合 | INFO末尾の「追記」セクション |
+| `confirmed_addons`（4行以上） | `T4_ADDONS` | 独立スライド |
+| カテゴリ（4件以上） | `T2_MENU_1COL` | デフォルト。8〜10項目/枚 |
+| カテゴリ（1〜3件） | `T2_MENU_1COL`（特大） | `layout.enlarged = true` |
+| 隣接2カテゴリ（短い商品名） | `T3_MENU_2COL` | 7.3の条件を全て満たす場合のみ |
+
+**スライド順序**: T0_TITLE → T1_INFO → (T4_ADDONS) → メニュー系（InputPack の categories 順）
+
 ---
 
 ## 8. デザイン案選択フロー
@@ -622,26 +903,31 @@ PNG連番 + ZIP + RUN_REPORT
 
 Gemini にデザインを丸投げするのではなく、**固定テンプレート HTML/CSS + ThemeTokens の CSS変数注入** で生成する。
 
-```html
-<!-- 例: T2_MENU_1COL テンプレート -->
-<html>
-<head>
-  <style>
-    :root {
-      --bg: {{colors.bg}};
-      --fg: {{colors.fg}};
-      --accent: {{colors.accent}};
-      --radius: {{radius}}px;
-      /* ... ThemeTokens を CSS変数に展開 */
-    }
-    /* 固定グリッド・フォントサイズのCSS */
-  </style>
-</head>
-<body>
-  <!-- カテゴリ見出し + メニュー行を動的生成 -->
-</body>
-</html>
+**テンプレートエンジンは使わない**。TypeScript 関数でHTMLを直接組み立てる。
+
+理由:
+- 外部依存が増えない
+- HTMLエスケープ方針を関数内で統一できる（OCR由来テキストの安全化）
+- テンプレートの条件分岐（特大表示、2カラム等）がTypeScriptのロジックで自然に書ける
+
+```typescript
+// 例: テンプレート関数のシグネチャ
+function renderMenu1Col(slide: Menu1ColSlide, theme: ThemeTokens): string {
+  // ThemeTokens → CSS変数
+  const cssVars = themeToCssVars(theme);
+  // SlideMenuItem[] → HTML行
+  const rows = slide.payload.items.map(item => menuItemToHtml(item, slide.layout));
+  // 組み立て
+  return `<!DOCTYPE html>
+<html><head><style>
+  :root { ${cssVars} }
+  /* 固定グリッド・フォントサイズのCSS */
+</style></head>
+<body>...</body></html>`;
+}
 ```
+
+**文字の安全化**: テンプレート関数内で全テキストをHTMLエスケープする。絵文字・機種依存文字は QAValidator で事前検出し、要確認扱いにする（無断削除しない）。
 
 ### 9.2 フォント
 
@@ -655,6 +941,8 @@ Gemini にデザインを丸投げするのではなく、**固定テンプレ�
 viewport: { width: 1920, height: 1080 }
 deviceScaleFactor: 2  // Retina品質（出力: 3840x2160）
 ```
+
+**プレビューも本番と同一解像度**（1920x1080, deviceScaleFactor: 2）で生成する。解像度を落とすとフォントの見え方が変わり、「プレビューで選んだのに本番で違う」が起きるため。速度は枚数を絞ることで担保する（プレビュー = Title + Info + Menu代表1枚 × 案数）。
 
 ### 9.4 禁止事項（レンダリング時）
 
@@ -822,7 +1110,59 @@ data/                       # 学習データ（L1以降で使用）
 
 ---
 
-## 14. 将来拡張（今はやらない）
+## 14. アーキテクチャ判断（確定事項）
+
+### 14.1 run_id の採番
+
+**ULID**（Universally Unique Lexicographically Sortable Identifier）を使用する。
+
+- 時系列ソート可能（ファイルシステム上で自然に並ぶ）
+- 衝突確率が十分に低い
+- パッケージ: `ulid`（軽量）
+
+ディレクトリ構造:
+```
+output/runs/{run_id}/
+  input_pack.json
+  genre_result.json
+  theme_tokens.json
+  slide_plan.json
+  selection_log.json
+  preview/
+  slides/
+  run_report.md
+```
+
+### 14.2 Gemini API リトライ戦略
+
+| 条件 | 動作 |
+|------|------|
+| リトライ対象 | HTTP 429（レート制限）/ 5xx / タイムアウト のみ |
+| 最大回数 | 3回 |
+| バックオフ | exponential（0.5s → 1.5s → 4s）+ jitter |
+| 成功 | 通常処理を続行 |
+| 全リトライ失敗 | パイプラインを中断せず、RUN_REPORT に `FAILED_STEP` と `retry_count` を記録してユーザーに返す |
+
+4xx（認証エラー等）はリトライせず即エラーとする。
+
+---
+
+## 15. 技術スタック
+
+| 技術 | 用途 |
+|------|------|
+| Node.js 20+ | ランタイム |
+| TypeScript (strict) | 型安全 |
+| Zod | スキーマ検証 |
+| Google Gemini API | ジャンル判定・トークン生成 |
+| Playwright | HTML → PNG レンダリング |
+| Noto Sans JP | 日本語フォント（システムインストール） |
+| archiver | ZIP生成 |
+| ulid | run_id 生成（時系列ソート可能なユニークID） |
+
+---
+
+## 16. 将来拡張（今はやらない）
 
 | 拡張 | 概要 | 前提 |
 |------|------|------|
@@ -834,11 +1174,11 @@ data/                       # 学習データ（L1以降で使用）
 | PPTX出力 | 編集可能な中間形式 | PptxGenJS |
 | テンプレ追加 | 季節メニュー・セットメニュー等の専用レイアウト | 運用実績後 |
 | ワンクリックセットアップ | install.bat / install.command で Node/Playwright/フォント一括セットアップ | 配布段階 |
-| 学習機能 L0（SelectionLog） | デザイン案の選択/却下ログを保存（セクション14.3） | **MVP に含める**（工数ほぼゼロ） |
+| 学習機能 L0（SelectionLog） | デザイン案の選択/却下ログを保存（セクション16.3） | **MVP に含める**（工数ほぼゼロ） |
 | 学習機能 L1（プロンプト注入） | 蓄積ログをジャンル別集計 → ThemeGenerator プロンプトに採用傾向を注入 | データ10〜20件蓄積後 |
 | 学習機能 L2（パレット重み） | ジャンル別許可パレットに採用率ベースの動的重みを付与 | データ50件以上蓄積後 |
 
-### 14.1 パッチJSON微調整（設計メモ）
+### 16.1 パッチJSON微調整（設計メモ）
 
 MVPでは「3〜5案から選ぶだけ」で運用するが、将来の対話微調整に備えて以下の設計方針を記録する。
 
@@ -861,7 +1201,7 @@ interface ThemePatch {
 - テンプレート側のルール（最小フォント等）が常に効くのでドリフトしない
 - 差分が明示的なのでユーザーが変更内容を把握しやすい
 
-### 14.2 run_id 中間生成物保存（設計メモ）
+### 16.2 run_id 中間生成物保存（設計メモ）
 
 ```
 output/
@@ -882,7 +1222,7 @@ output/
 - パッチ微調整時に前回のTokensをベースにできる
 - デバッグ・品質改善の追跡が容易
 
-### 14.3 選択ログ・学習機能（SelectionLog）
+### 16.3 選択ログ・学習機能（SelectionLog）
 
 ユーザーがどのデザイン案を選んだか（または全却下したか）を蓄積し、ジャンルごとに採用されやすいデザインを学習する。
 
@@ -951,17 +1291,3 @@ data/
 ```
 
 L1以降で使用。ジャンル別に SelectionLog を集計した統計データ。
-
----
-
-## 15. 技術スタック
-
-| 技術 | 用途 |
-|------|------|
-| Node.js 20+ | ランタイム |
-| TypeScript (strict) | 型安全 |
-| Zod | スキーマ検証 |
-| Google Gemini API | ジャンル判定・トークン生成 |
-| Playwright | HTML → PNG レンダリング |
-| Noto Sans JP | 日本語フォント（システムインストール） |
-| archiver | ZIP生成 |
