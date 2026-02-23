@@ -28,19 +28,21 @@ slid は、飲食店を撮影した動画に差し込む **情報スライド（
 ## 2. アーキテクチャ
 
 ```
-InputPack (店情報 + メニュー)
-  ↓
-GenreSelector (ジャンル判定 → ユーザー確定)
-  ↓
-ThemeGenerator (3〜5 デザイン案 → ユーザー選択)
-  ↓
-SlidePlanner (スライド分割計画)
-  ↓
-Renderer (HTML/CSS テンプレ + Playwright → PNG)
-  ↓
-QAValidator (全件掲載チェック・overflow検知)
-  ↓
-出力: PNG連番 + ZIP + レポート
+メニュー画像（Phase 2）→ OCR Extractor → 確認ステップ ─┐
+                                                       ↓
+手入力 JSON（Phase 1）─────────────────────→ InputPack (店情報 + メニュー)
+                                                       ↓
+                                              GenreSelector (ジャンル判定 → ユーザー確定)
+                                                       ↓
+                                              ThemeGenerator (3〜5 デザイン案 → ユーザー選択)
+                                                       ↓
+                                              SlidePlanner (スライド分割計画)
+                                                       ↓
+                                              Renderer (HTML/CSS テンプレ + Playwright → PNG)
+                                                       ↓
+                                              QAValidator (全件掲載チェック・overflow検知)
+                                                       ↓
+                                              出力: PNG連番 + ZIP + レポート
 ```
 
 ### 2.1 コンポーネント一覧
@@ -95,9 +97,13 @@ interface InputPack {
         price_text: string | null;   // 原文そのまま（例: "９５０円", "＋２００円"）
         note: string | null;         // 注記（例: "期間限定", "数量限定"）
         limited: boolean;
+        needs_confirmation: boolean; // OCR読取り不確実 → ユーザー確認必要
+        ocr_confidence: number | null; // OCR信頼度 0.0〜1.0（手入力時は null）
       }[];
     }[];
   };
+
+  input_source: "manual" | "ocr"; // 入力方法（OCR → 確認ステップ必須）
 
   confirmed_addons: {           // 店確認済み追記
     text: string;
@@ -118,6 +124,65 @@ interface InputPack {
 | カテゴリは店の表記に準拠 | 勝手な再分類は禁止 |
 | 不明は null | 推測で補完しない |
 | おすすめ/人気は根拠がある場合のみ | ハルシネーション防止 |
+| OCR入力は確認ステップ必須 | 読取り誤りの修正機会を保証する |
+| needs_confirmation は RUN_REPORT に列挙 | ユーザーが見落とさないように |
+
+### 3.3 OCR取り込みフロー（メニュー画像 → InputPack）
+
+**目的**: メニューを手入力する手間を削減する。ユーザーは現地撮影のメニュー表画像をアップロードし、OCRで読み取った結果を確認・修正してから生成に進む。
+
+#### フロー
+
+```
+1. ユーザーがメニュー表画像をアップロード（複数枚対応）
+   ↓
+2. OCR処理（Gemini Vision）
+   → カテゴリ / 品名 / 価格 / 注記 を構造化抽出
+   → 各項目に ocr_confidence を付与
+   → confidence < 0.8 の項目は needs_confirmation = true
+   ↓
+3. 確認ステップ（必須）
+   → カテゴリ / 品名 / 価格 の一覧を表示
+   → needs_confirmation 項目をハイライト表示
+   → ユーザーが編集・修正・確定
+   ↓
+4. 確定後 → InputPack 生成（input_source: "ocr"）
+   ↓
+5. 通常のパイプラインへ（ジャンル判定 → テーマ選択 → レンダリング）
+```
+
+#### 設計原則
+
+| ルール | 理由 |
+|-------|------|
+| OCR結果は必ず確認ステップを経る | 読取り誤りの修正機会を保証 |
+| confidence が低い項目は自動で `needs_confirmation = true` | 見落とし防止 |
+| ユーザーが確定するまで生成に進まない | 誤ったメニューでスライドを作らない |
+| 画像は SLIDE_DATA_PACK に参照を保存 | 後から原本を確認できるように |
+| 手入力との併用も可能 | OCRで取れない部分を手動で補完 |
+
+#### MVP での実装範囲
+
+- **Phase 1（MVP）**: 手入力のみ。InputPack を直接 JSON で用意
+- **Phase 2**: OCR取り込み + 確認UI（CLI: テーブル表示で行ごとに確認 / Web UI: 編集可能テーブル）
+- OCRエンジンは Gemini Vision（既にAPIキーがある）
+
+#### 確認UI（Phase 2 最小仕様）
+
+```
+[OCR結果確認]
+
+カテゴリ: 麺類
+  1. 豚骨ラーメン ......... 800円     OK
+  2. 味噌ラーメン ......... 950円     OK
+  3. ???ラーメン .......... 9?0円     ← 要確認（confidence: 0.45）
+
+カテゴリ: ご飯もの
+  4. チャーハン ........... 750円     OK
+  5. 天津飯 ............... 800円     OK
+
+→ 修正する番号を入力（0で確定）:
+```
 
 ---
 
@@ -654,7 +719,7 @@ $ npx tsx src/pipeline.ts norumatsu.json
 ```
 src/
   schema/
-    input-pack.ts           # InputPack Zod スキーマ
+    input-pack.ts           # InputPack Zod スキーマ（needs_confirmation 含む）
     theme-tokens.ts         # ThemeTokens Zod スキーマ
     slide-plan.ts           # SlidePlan Zod スキーマ
     genre.ts                # ジャンル定義・パレット
@@ -670,6 +735,9 @@ src/
     playwright.ts           # Playwright PNG レンダリング
   qa/
     validator.ts            # QAValidator
+  ocr/                      # Phase 2: OCR取り込み
+    extractor.ts            # Gemini Vision → 構造化メニューデータ
+    reviewer.ts             # OCR結果の確認・修正フロー（CLI / Web UI）
   pipeline.ts               # メインパイプライン
 example/
   norumatsu.json            # 野呂松飯店テストデータ
@@ -681,11 +749,57 @@ example/
 
 | 拡張 | 概要 | 前提 |
 |------|------|------|
+| 対話微調整（パッチJSON） | HTML全文再生成ではなく、編集命令JSONでThemeTokens/LayoutParamsを部分更新 → 再レンダ | MVP安定後・スキーマ設計済み |
+| run_id 中間生成物保存 | 各実行を run_id で識別し、InputPack/ThemeTokens/SlidePlan/PNG を保存。再実行・差分レンダを可能にする | MVP安定後 |
 | Discord Bot | スレッド内の画像D&D → 自動生成 | MVP安定後 |
-| OCR自動化 | メニュー画像 → InputPack 自動変換 | Gemini Vision |
+| OCR確認UI（Web版） | 編集可能テーブルでOCR結果を確認・修正（セクション3.3のPhase 2） | Gemini Vision・基本フロー安定後 |
 | Web自動リサーチ | 店情報の自動収集 | Perplexity API |
 | PPTX出力 | 編集可能な中間形式 | PptxGenJS |
 | テンプレ追加 | 季節メニュー・セットメニュー等の専用レイアウト | 運用実績後 |
+| ワンクリックセットアップ | install.bat / install.command で Node/Playwright/フォント一括セットアップ | 配布段階 |
+
+### 14.1 パッチJSON微調整（設計メモ）
+
+MVPでは「3〜5案から選ぶだけ」で運用するが、将来の対話微調整に備えて以下の設計方針を記録する。
+
+**方針**: ユーザーの指示（例:「背景を暗く」「余白を詰める」「見出しを太く」）に対して、LLMはHTML全文ではなく**編集命令JSON（パッチ）** を返す。パッチを ThemeTokens / LayoutParams に適用し、テンプレートHTMLを再レンダする。
+
+```typescript
+// パッチ命令の例（将来実装時のスキーマ案）
+interface ThemePatch {
+  run_id: string;
+  patches: {
+    path: string;        // 例: "colors.bg", "density", "radius"
+    value: unknown;      // 新しい値
+    reason: string;      // LLMが返す変更理由
+  }[];
+}
+```
+
+**利点**:
+- HTML全文を持ち回らないのでコスト・遅延が減る
+- テンプレート側のルール（最小フォント等）が常に効くのでドリフトしない
+- 差分が明示的なのでユーザーが変更内容を把握しやすい
+
+### 14.2 run_id 中間生成物保存（設計メモ）
+
+```
+output/
+  runs/
+    {run_id}/
+      input_pack.json        # 入力データ（再現用）
+      genre_result.json      # ジャンル判定結果
+      theme_tokens.json      # 選択されたThemeTokens
+      slide_plan.json        # 分割計画
+      preview/               # プレビューPNG
+      slides/                # 本番PNG
+      run_report.md          # QAレポート
+```
+
+**利点**:
+- 同じ店を再生成する際に前回の設定を引き継げる
+- パッチ微調整時に前回のTokensをベースにできる
+- デバッグ・品質改善の追跡が容易
 
 ---
 
